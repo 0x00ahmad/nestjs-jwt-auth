@@ -1,0 +1,47 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  // previewFeatures = ["mongodb"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model AuthRequest {
+  id              Int      @id @default(autoincrement())
+  requestersEmail String   @unique
+  code            String
+  expiryTime      DateTime
+  isTwoFa         Boolean  @default(false)
+}
+
+model User {
+  id            Int      @id @default(autoincrement())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime
+  isActive      Boolean  @default(true)
+  isBlocked     Boolean  @default(false)
+  passwordHash  String
+  email         String   @unique // required field for sending mails to
+  liveSessions  Json[]
+  // * 2FA fields
+  is2FaVerified Boolean  @default(false)
+  twoFaSecret   String?
+  recoveryKey   String?
+  backupCodes   Json?
+  // ? project related fields
+  usernameId    String   @unique
+  userType      UserType @default(USER)
+
+  @@map("users")
+}
+
+enum UserType {
+  ADMIN
+  USER
+  DEBUG
+}
